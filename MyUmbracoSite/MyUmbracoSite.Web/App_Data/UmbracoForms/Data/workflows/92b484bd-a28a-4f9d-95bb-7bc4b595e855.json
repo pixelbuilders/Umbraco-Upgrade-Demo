@@ -1,0 +1,19 @@
+{
+  "id": "92b484bd-a28a-4f9d-95bb-7bc4b595e855",
+  "name": "Example Custom Workflow",
+  "form": "78f6aa5d-f481-4321-a9aa-0796822dd7ee",
+  "active": true,
+  "includeSensitiveData": "False",
+  "workflowTypeId": "ccbeb0d5-adaa-4729-8b4c-4bb439dc0202",
+  "executesOn": "Submitted",
+  "settings": {},
+  "sortOrder": 0,
+  "isMandatory": false,
+  "condition": {
+    "id": "00000000-0000-0000-0000-000000000000",
+    "enabled": false,
+    "actionType": "Show",
+    "logicType": "All",
+    "rules": []
+  }
+}
