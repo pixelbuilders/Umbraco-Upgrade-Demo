@@ -1,5 +1,5 @@
-﻿@inherits Umbraco.Web.Mvc.UmbracoViewPage<ContentModels.HomePage>
-@using ContentModels = Umbraco.Web.PublishedModels;
+﻿@inherits UmbracoViewPage<ContentModels.HomePage>
+@using ContentModels = Umbraco.Cms.Web.Common.PublishedModels;
 @{
     Layout = null;
 }
@@ -47,41 +47,43 @@
         {
             <div class="mb-5 p-4 border rounded bg-dark text-light">
                 <h2>Nested Content</h2>
-                @foreach (var box in Model.NestedContent)
+                @foreach (var box in Model.NestedContent.Select(x => x.Content).OfType<MyNestedItem>())
                 {
-                    @RenderNestedBox(box, 1);
+                    RenderNestedBox(box, 1);
                 }
             </div>
         }
 
         <div class="mb-5 p-4 border rounded bg-dark text-light">
-            @Umbraco.RenderMacro("renderUmbracoForm", new { FormGuid = Model.Form, FormTheme = Model.FormTheme, ExcludeScripts = "1" })
+            @await Component.InvokeAsync("RenderForm", new { formId = Model.Form, theme = Model.FormTheme, includeScripts = false })
         </div>
     </div>
 
 </body>
 </html>
 
-@helper RenderNestedBox(MyNestedItem box, int level)
-{
-    var boxClass = "bg-light text-dark";
-    switch (level)
+@{
+    void RenderNestedBox(MyNestedItem box, int level)
     {
-        case 2:
-            boxClass = "bg-primary text-dark";
-            break;
-        case 3:
-            boxClass = "bg-secondary text-dark";
-            break;
-        case 4:
-            boxClass = "bg-info text-dark";
-            break;
-    }
-    <div class="p-3 border rounded mb-3 @boxClass">
-        <h4>@box.Title</h4>
-        @foreach (var child in box.MoreNestedItems)
+        var boxClass = "bg-light text-dark";
+        switch (level)
         {
-            @RenderNestedBox(child, level + 1);
+            case 2:
+                boxClass = "bg-primary text-dark";
+                break;
+            case 3:
+                boxClass = "bg-secondary text-dark";
+                break;
+            case 4:
+                boxClass = "bg-info text-dark";
+                break;
         }
-    </div>
+        <div class="p-3 border rounded mb-3 @boxClass">
+            <h4>@box.Title</h4>
+            @foreach (var child in box.MoreNestedItems.Select(x => x.Content).OfType<MyNestedItem>())
+            {
+                RenderNestedBox(child, level + 1);
+            }
+        </div>
+    }
 }

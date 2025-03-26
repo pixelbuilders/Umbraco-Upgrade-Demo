@@ -1,14 +1,24 @@
-@inherits WebViewPage<Umbraco.Forms.Web.Models.FormViewModel>
+@model Umbraco.Forms.Web.Models.FormViewModel
 @using Umbraco.Forms.Core.Enums
-@using Umbraco.Forms.Mvc
-@using Umbraco.Forms.Mvc.Models
-@using Umbraco.Forms.Mvc.BusinessLogic
+@using Umbraco.Forms.Web
+@using Umbraco.Forms.Web.Models
+@using Umbraco.Forms.Web.Services
+
+@inject IFormThemeResolver FormThemeResolver
 
 @*Set a default class on all fields - needed by bootstrap*@
+
 @Html.SetFormFieldClass("form-control")
 
 @* Wrap all fields in a form-group - needed by bootstrap to correctly display fields horizontally*@
 @Html.SetFormFieldWrapperClass("form-group")
+
+@{
+    if (Model.DisableDefaultStylesheet == false)
+    {
+        Html.SetFormThemeCssFile("~/App_Plugins/UmbracoForms/Assets/themes/bootstrap3-horizontal/style.min.css");
+    }
+}
 
 
 <div class="umbraco-forms-page form-horizontal" id="@Model.CurrentPage.Id">

@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using Umbraco.Forms.Core;
 using Umbraco.Forms.Core.Enums;
 using Umbraco.Forms.Core.Persistence.Dtos;
-using Umbraco.Core.Logging;
-using Umbraco.Core.Composing;
+using Microsoft.Extensions.Logging;
 
 namespace MyUmbracoSite.Core.Forms
 {
@@ -13,21 +12,24 @@ namespace MyUmbracoSite.Core.Forms
     /// </summary>
     public class ExampleWorkflow : WorkflowType
     {
-        public ExampleWorkflow()
+        private readonly ILogger<ExampleWorkflow> _logger;
+        public ExampleWorkflow(ILogger<ExampleWorkflow> logger)
         {
             Id = new Guid("ccbeb0d5-adaa-4729-8b4c-4bb439dc0202");
             Name = "ExampleWorkflow";
             Description = "This workflow is just for testing";
             Icon = "icon-chat-active";
             Group = "Services";
+
+            _logger = logger;
         }
-        public override WorkflowExecutionStatus Execute(Record record, RecordEventArgs e)
+        public override WorkflowExecutionStatus Execute(WorkflowExecutionContext context)
         {
             // first we log it
-            Current.Logger.Debug<ExampleWorkflow>("the IP " + record.IP + " has submitted a record");
+            _logger.LogDebug("The IP {IP} has submitted a record", context.Record.IP);
 
             // we can then iterate through the fields
-            foreach (RecordField rf in record.RecordFields.Values)
+            foreach (RecordField rf in context.Record.RecordFields.Values)
             {
                 // and we can then do something with the collection of values on each field
                 List<object> vals = rf.Values;
@@ -37,10 +39,10 @@ namespace MyUmbracoSite.Core.Forms
             }
 
             //Change the state
-            record.State = FormState.Approved;
+            context.Record.State = FormState.Approved;
 
-            Current.Logger.Debug<ExampleWorkflow>("The record with unique id {RecordId} that was submitted via the Form {FormName} with id {FormId} has been changed to {RecordState} state",
-               record.UniqueId, e.Form.Name, e.Form.Id, "approved");
+            _logger.LogDebug("The record with unique id {RecordId} that was submitted via the Form {FormName} with id {FormId} has been changed to {RecordState} state",
+               context.Record.UniqueId, context.Form.Name, context.Form.Id, "approved");
 
             return WorkflowExecutionStatus.Completed;
         }
@@ -49,6 +51,5 @@ namespace MyUmbracoSite.Core.Forms
         {
             return new List<Exception>();
         }
-
     }
 }

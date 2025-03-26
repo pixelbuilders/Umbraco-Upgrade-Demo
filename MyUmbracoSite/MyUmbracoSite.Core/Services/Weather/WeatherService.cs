@@ -1,15 +1,9 @@
-﻿using MyUmbracoSite.Core.Configuration;
+﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using MyUmbracoSite.Core.Configuration;
 using MyUmbracoSite.Core.Models.Weather;
 using Newtonsoft.Json;
-using OfficeOpenXml.FormulaParsing.Excel.Functions.DateTime;
-using Serilog.Core;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Net.Http;
-using System.Threading.Tasks;
-using System.Web;
-using Umbraco.Core.Logging;
 
 namespace MyUmbracoSite.Core.Services.Weather
 {
@@ -21,22 +15,26 @@ namespace MyUmbracoSite.Core.Services.Weather
     public class WeatherService : IWeatherService
     {
 
-        private MyCustomAppSettings myCustomAppSettings = new MyCustomAppSettings();
+        private MyCustomAppSettings myCustomAppSettings { get; set; }
 
         private const string TomorrowIoUrl = "https://api.tomorrow.io/v4/timelines";
         private const string CacheFileName = "~/weatherdata.json";  // File name for caching
 
-        private readonly ILogger _logger;
+        private readonly ILogger<WeatherService> _logger;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public WeatherService(ILogger logger)
+        public WeatherService(ILogger<WeatherService> logger, IWebHostEnvironment webHostEnvironment, IOptions<MyCustomAppSettings> options)
         {
             _logger = logger;
+            _webHostEnvironment = webHostEnvironment;
+            myCustomAppSettings = options.Value;
         }
 
         public List<WeatherDay> GetWeatherForecast(string query, int days)
         {
             List<WeatherDay> weatherDays = new List<WeatherDay>();
-            string cacheFilePath = HttpContext.Current.Server.MapPath(CacheFileName); // Path to store cached data
+            string contentRootPath = _webHostEnvironment.ContentRootPath;
+            string cacheFilePath = Path.Combine(contentRootPath, CacheFileName); // Path to store cached data
 
             try
             {
@@ -51,7 +49,7 @@ namespace MyUmbracoSite.Core.Services.Weather
                 {
                     // If not valid, fetch the data from the API
 
-                    _logger.Info<WeatherService>("WeatherService cache file '{0}' has expired. Requires API refresh.", CacheFileName);
+                    _logger.LogInformation("WeatherService cache file '{CacheFileName}' has expired. Requires API refresh.", CacheFileName);
 
                     using (HttpClient client = new HttpClient())
                     {
@@ -63,7 +61,7 @@ namespace MyUmbracoSite.Core.Services.Weather
                         string endTimeFormatted = endTime.ToString("yyyy-MM-ddTHH:mm:ssZ");
 
                         // Prepare the request URL
-                        string url = $"{TomorrowIoUrl}?location={myCustomAppSettings.TomorrowIoLocationLatitude},{myCustomAppSettings.TomorrowIoLocationLongitude}&fields=temperature,weatherCode&units=metric&timesteps=1d&startTime={startTimeFormatted}&endTime={endTimeFormatted}&apikey={myCustomAppSettings.TomorrowIoApiKey}";
+                        string url = $"{TomorrowIoUrl}?location={myCustomAppSettings.LocationLatitude},{myCustomAppSettings.LocationLongitude}&fields=temperature,weatherCode&units=metric&timesteps=1d&startTime={startTimeFormatted}&endTime={endTimeFormatted}&apikey={myCustomAppSettings.ApiKey}";
 
                         // Fetch the weather data from Tomorrow.io
                         string jsonContent = client.GetStringAsync(url).Result;
@@ -93,14 +91,14 @@ namespace MyUmbracoSite.Core.Services.Weather
 
                         // Cache the fetched data in the JSON file
                         File.WriteAllText(cacheFilePath, JsonConvert.SerializeObject(weatherDays));
-                        _logger.Info<WeatherService>("Updated WeatherService cache file: {0}", CacheFileName);
+                        _logger.LogInformation("Updated WeatherService cache file: {CacheFileName}", CacheFileName);
                     }
                 }
             }
             catch (Exception ex)
             {
                 // Handle any errors (e.g., network issues, JSON parsing issues)
-                _logger.Error<WeatherService>(ex, "Error fetching weather data: {0}", ex.Message);
+                _logger.LogError(ex, "Error fetching weather data: {Message}", ex.Message);
             }
 
             return weatherDays;

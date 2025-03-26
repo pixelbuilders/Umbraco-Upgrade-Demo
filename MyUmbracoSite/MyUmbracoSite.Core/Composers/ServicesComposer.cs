@@ -1,14 +1,17 @@
 ﻿using MyUmbracoSite.Core.Services.Weather;
-using Umbraco.Core;
-using Umbraco.Core.Composing;
+using Umbraco.Cms.Core.Composing;
+using Umbraco.Cms.Core.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
+using MyUmbracoSite.Core.Configuration;
 
 namespace MyUmbracoSite.Core.Composers
 {
-    public class ServicesComposer : IUserComposer
+    public class ServicesComposer : IComposer
     {
-        public void Compose(Composition composition)
+        public void Compose(IUmbracoBuilder builder)
         {
-            composition.Register<IWeatherService, WeatherService>();
+            builder.Services.AddTransient<IWeatherService, WeatherService>();
+            builder.Services.Configure<MyCustomAppSettings>(builder.Config.GetSection("Tomorrow.io"));
         }
     }
 }

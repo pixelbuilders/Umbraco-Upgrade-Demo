@@ -1,20 +1,10 @@
-﻿using System.Configuration;
-
-namespace MyUmbracoSite.Core.Configuration
+﻿namespace MyUmbracoSite.Core.Configuration
 {
     public class MyCustomAppSettings
     {
-        public MyCustomAppSettings()
-        {
-            TomorrowIoApiKey = ConfigurationManager.AppSettings["Tomorrow.io.ApiKey"];
-            TomorrowIoLocationName = ConfigurationManager.AppSettings["Tomorrow.io.Location.Name"];
-            TomorrowIoLocationLatitude = ConfigurationManager.AppSettings["Tomorrow.io.Location.Latitude"];
-            TomorrowIoLocationLongitude = ConfigurationManager.AppSettings["Tomorrow.io.Location.Longitude"];
-        }
-
-        public string TomorrowIoApiKey { get; set; }
-        public string TomorrowIoLocationName { get; set; }
-        public string TomorrowIoLocationLatitude { get; set; }
-        public string TomorrowIoLocationLongitude { get; set; }
+        public string ApiKey { get; set; } = "";
+        public string LocationName { get; set; } = "";
+        public string LocationLatitude { get; set; } = "";
+        public string LocationLongitude { get; set; } = "";
     }
 }
