@@ -23,7 +23,7 @@ namespace MyUmbracoSite.Core.Forms
 
             _logger = logger;
         }
-        public override WorkflowExecutionStatus Execute(WorkflowExecutionContext context)
+        public override Task<WorkflowExecutionStatus> ExecuteAsync(WorkflowExecutionContext context)
         {
             // first we log it
             _logger.LogDebug("The IP {IP} has submitted a record", context.Record.IP);
@@ -44,8 +44,9 @@ namespace MyUmbracoSite.Core.Forms
             _logger.LogDebug("The record with unique id {RecordId} that was submitted via the Form {FormName} with id {FormId} has been changed to {RecordState} state",
                context.Record.UniqueId, context.Form.Name, context.Form.Id, "approved");
 
-            return WorkflowExecutionStatus.Completed;
+            return Task.FromResult(WorkflowExecutionStatus.Completed);
         }
+
 
         public override List<Exception> ValidateSettings()
         {
