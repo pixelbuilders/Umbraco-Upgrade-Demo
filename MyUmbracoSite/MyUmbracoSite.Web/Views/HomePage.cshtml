@@ -1,0 +1,87 @@
+﻿@inherits Umbraco.Web.Mvc.UmbracoViewPage<ContentModels.HomePage>
+@using ContentModels = Umbraco.Web.PublishedModels;
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Demo</title>
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+</head>
+<body style="background-color:@Model.SpectrumColorPicker">
+    <div class="container my-5">
+        <div class="mb-4 text-center">
+            <h1 class="display-4">@Model.PageTitle</h1>
+            <p class="text-muted">3-Day Weather Forecast provided by Tomorrow.io</p>
+        </div>
+
+        <div class="row mb-5">
+            <div class="col-md-3">
+                <div class="card text-white bg-dark text-light" style="height: 100%; flex-direction: row; align-items: center;">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">@Model.WeatherLocation</h5>
+                    </div>
+                </div>
+            </div>
+            @foreach (var weather in Model.WeatherForecast)
+            {
+                var dayOfWeek = Model.WeatherForecast.IndexOf(weather) == 0 ? "Today" : Model.WeatherForecast.IndexOf(weather) == 1 ? "Tomorrow" : weather.Date.ToString("dddd");
+                <div class="col-md-3">
+                    <div class="card">
+                        <div class="card-body text-center" style="height: 100%;">
+                            <h5 class="card-title">@dayOfWeek</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">@weather.WeatherDescription</h6>
+                            <p class="card-text">Temp: @string.Format("{0}{1}", weather.Temperature, weather.TemperatureUnit)</p>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        @if (Model.NestedContent?.Any() == true)
+        {
+            <div class="mb-5 p-4 border rounded bg-dark text-light">
+                <h2>Nested Content</h2>
+                @foreach (var box in Model.NestedContent)
+                {
+                    @RenderNestedBox(box, 1);
+                }
+            </div>
+        }
+
+        <div class="mb-5 p-4 border rounded bg-dark text-light">
+            @Umbraco.RenderMacro("renderUmbracoForm", new { FormGuid = Model.Form, FormTheme = Model.FormTheme, ExcludeScripts = "1" })
+        </div>
+    </div>
+
+</body>
+</html>
+
+@helper RenderNestedBox(MyNestedItem box, int level)
+{
+    var boxClass = "bg-light text-dark";
+    switch (level)
+    {
+        case 2:
+            boxClass = "bg-primary text-dark";
+            break;
+        case 3:
+            boxClass = "bg-secondary text-dark";
+            break;
+        case 4:
+            boxClass = "bg-info text-dark";
+            break;
+    }
+    <div class="p-3 border rounded mb-3 @boxClass">
+        <h4>@box.Title</h4>
+        @foreach (var child in box.MoreNestedItems)
+        {
+            @RenderNestedBox(child, level + 1);
+        }
+    </div>
+}
